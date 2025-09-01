@@ -6,17 +6,12 @@ DIM INTEGER paused
 DIM STRING k$
 DIM STRING title$
 
-'--- set your music folder here ---
 CONST folder$ = "B:/music/runes/"
 
-'--- set font for display ---
-FONT 1
-
-'--- start first track ---
 CLS
 TEXT 160,13,"Folder:"+folder$,"CB"
-ui_vol
-
+UI_HELP
+UI_VOL
 PLAY MP3 folder$
 PLAY VOLUME vol,vol
 paused = 0
@@ -29,11 +24,11 @@ IF k$ <> "" THEN
     CASE 128  ' up
       vol = MIN(vol + 5, 100)
       PLAY VOLUME vol,vol
-      ui_vol
+      UI_VOL
     CASE 129  ' down
       vol = MAX(vol - 5, 0)
       PLAY VOLUME vol,vol
-      ui_vol
+      UI_VOL
     CASE 130  ' left 
       PLAY PREVIOUS
       paused = 0
@@ -63,13 +58,22 @@ PAUSE 100
 LOOP
 CLS
 
-SUB ui_vol
-  BOX 20,20,200,20,1,1,1
-  BOX 20,20,200,20
-  BOX 20,20,2*vol,20,1,,rgb(green)
+SUB UI_VOL
+  BOX 60,20,200,20,1,1,1 ' clear
+  BOX 60,20,200,20
+  BOX 60,20,2*vol,20,1,,rgb(green)
 END SUB
 
 SUB UI_TITLE
-  BOX 0,150,320,20,1,1,1
+  BOX 0,150,320,20,1,1,1 ' clear
   TEXT 300,160,title$,"RM"
+END SUB
+
+SUB UI_HELP
+line 0,300,319,300,1,rgb(magenta)
+local helps$="enter "+chr$(161)+"/"
+helps$=helps$+chr$(160)+" | "
+helps$=helps$+chr$(130)+" next | "
+helps$=helps$+chr$(131)+" prev"
+text 6,316,helps$,"LB",1,1,col1
 END SUB
