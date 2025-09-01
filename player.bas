@@ -75,5 +75,5 @@ local helps$="enter "+chr$(161)+"/"
 helps$=helps$+chr$(160)+" | "
 helps$=helps$+chr$(130)+" next | "
 helps$=helps$+chr$(131)+" prev"
-text 6,316,helps$,"LB",1,1,col1
+text 6,316,helps$,"LB",1,1
 END SUB
