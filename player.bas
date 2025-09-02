@@ -3,6 +3,7 @@ OPTION EXPLICIT
 
 DIM INTEGER vol = 50  
 DIM INTEGER paused
+DIM INTEGER choice = 0
 DIM STRING k$
 DIM STRING title$
 
@@ -17,9 +18,23 @@ LOCAL STRING n$=dir$(music$+"*",DIR)
 LOCAL INTEGER y=0
 chdir music$
 DO WHILE n$<>"" 
-  TEXT 30,20+y,n$,"LB"
-  y=y+16
+  TEXT 30,20+y*16,n$,"LB"
+  y=y+1
   n$=dir$()
+LOOP
+DO
+next_: k$=INKEY$
+IF k$ = "" THEN GOTO next_
+SELECT CASE ASC(k$)
+  CASE 128
+    choice = MAX(0,choice-1)
+  CASE 129
+    choice = MIN(y-1,choice+1)
+  CASE 27
+    EXIT DO
+  CASE 13
+    PRINT choice
+END SELECT
 LOOP
 CLS
 chdir "/"
