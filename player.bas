@@ -6,21 +6,29 @@ DIM INTEGER paused
 DIM STRING k$
 DIM STRING title$
 
-CONST music_dir$ = "B:/music/"
-CONST cover$="album.bmp"
+DIM music$ = "B:/music/"
+'DIM folder$ = "B:/music/runes/"
+
+CHOOSE_F
+
+SUB CHOOSE_F
+CLS
+LOCAL STRING n$=dir$(music$+"*",DIR)
+LOCAL INTEGER y=0
+chdir music$
+DO WHILE n$<>"" 
+  TEXT 30,20+y,n$,"LB"
+  y=y+16
+  n$=dir$()
+LOOP
+CLS
+chdir "/"
+END SUB
 
 
 
-PLAY_ALBUM "runes"
-
-SUB PLAY_ALBUM d$
-local folder$=folder$+d$+"/" 
-local ex=MM.info(exists dir music_dir$+d$+"/")
-IF ex <> 0 THEN
-  print "directory not found"
-  END SUB
-ENDIF
-
+SUB play_f name$
+LOCAL folder$=music$+name$+"/"
 CLS
 TEXT 160,13,"Folder:"+folder$,"CB"
 UI_HELP
