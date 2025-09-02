@@ -6,7 +6,20 @@ DIM INTEGER paused
 DIM STRING k$
 DIM STRING title$
 
-CONST folder$ = "B:/music/runes/"
+CONST music_dir$ = "B:/music/"
+CONST cover$="album.bmp"
+
+
+
+PLAY_ALBUM "runes"
+
+SUB PLAY_ALBUM d$
+local folder$=folder$+d$+"/" 
+local ex=MM.info(exists dir music_dir$+d$+"/")
+IF ex <> 0 THEN
+  print "directory not found"
+  END SUB
+ENDIF
 
 CLS
 TEXT 160,13,"Folder:"+folder$,"CB"
@@ -57,6 +70,7 @@ ENDIF
 PAUSE 100
 LOOP
 CLS
+END SUB
 
 SUB UI_VOL
   BOX 60,20,200,20,1,1,1 ' clear
