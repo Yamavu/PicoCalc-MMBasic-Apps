@@ -13,16 +13,21 @@ DIM music$ = "B:/music/"
 CHOOSE_F
 
 SUB CHOOSE_F
+LOCAL STRING n$
+LOCAL INTEGER y
+cho:
 CLS
-LOCAL STRING n$=dir$(music$+"*",DIR)
-LOCAL INTEGER y=0
-chdir music$
+n$=dir$(music$+"*",DIR)
+y=0
+'chdir music$
 DO WHILE n$<>"" 
   TEXT 30,20+y*16,n$,"LB"
   y=y+1
   n$=dir$()
 LOOP
 DO
+BOX 0,0,30,320,1,1,1 ' clear 
+TEXT 28,20+choice*16,">","RB"
 next_: k$=INKEY$
 IF k$ = "" THEN GOTO next_
 SELECT CASE ASC(k$)
@@ -33,7 +38,8 @@ SELECT CASE ASC(k$)
   CASE 27
     EXIT DO
   CASE 13
-    PRINT choice
+    play_f chosen$()
+    GOTO cho
 END SELECT
 LOOP
 CLS
@@ -41,10 +47,21 @@ chdir "/"
 END SUB
 
 
+FUNCTION chosen$()
+LOCAL INTEGER i=0
+LOCAL STRING n$=dir$(music$+"*",DIR)
+DO
+IF i=choice THEN EXIT DO
+i=i+1
+n$=dir$()
+LOOP
+chosen$=n$
+END FUNCTION
 
 SUB play_f name$
 LOCAL folder$=music$+name$+"/"
 CLS
+UI_ART folder$
 TEXT 160,13,"Folder:"+folder$,"CB"
 UI_HELP
 UI_VOL
@@ -99,6 +116,16 @@ SUB UI_VOL
   BOX 60,20,200,20,1,1,1 ' clear
   BOX 60,20,200,20
   BOX 60,20,2*vol,20,1,,rgb(green)
+END SUB
+
+SUB UI_ART n$
+LOCAL STRING im$=n$+"album.bmp"
+IF MM.INFO(EXISTS FILE im$)=1 THEN
+LOAD IMAGE im$, 70,50
+ELSE
+BOX 70,50 , 180,180,,,rgb(grey)
+TEXT 110,110,"?","CM",,2,,rgb(grey)
+ENDIF
 END SUB
 
 SUB UI_TITLE
