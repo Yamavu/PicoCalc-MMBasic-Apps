@@ -1,10 +1,25 @@
+' PLAYER.BAS - MMBasic Script to play MP3s on PicoCalc
+' Copyright (C) 2025 Yamavu
+' 
+' This program is free software: you can redistribute it and/or modify
+' it under the terms of the GNU General Public License as published by
+' the Free Software Foundation, either version 3 of the License, or
+' (at your option) any later version.
+' 
+' This program is distributed in the hope that it will be useful,
+' but WITHOUT ANY WARRANTY; without even the implied warranty of
+' MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+' GNU General Public License for more details.
+' 
+' You should have received a copy of the GNU General Public License
+' along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 OPTION DEFAULT NONE
 OPTION EXPLICIT
 
 DIM INTEGER vol = 50  
 DIM INTEGER paused
 DIM INTEGER choice = 0
-DIM STRING k$
 DIM STRING title$
 
 DIM music$ = "B:/music/"
@@ -15,6 +30,7 @@ CHOOSE_F
 SUB CHOOSE_F
 LOCAL STRING n$
 LOCAL INTEGER y
+LOCAL STRING k$ ' key
 cho:
 CLS
 n$=dir$(music$+"*",DIR)
@@ -59,6 +75,7 @@ chosen$=n$
 END FUNCTION
 
 SUB play_f name$
+LOCAL STRING k$ ' key
 LOCAL folder$=music$+name$+"/"
 CLS
 UI_ART folder$
