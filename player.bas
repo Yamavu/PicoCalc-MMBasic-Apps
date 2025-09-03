@@ -31,6 +31,7 @@ SUB CHOOSE_F
 LOCAL STRING n$
 LOCAL INTEGER y
 LOCAL STRING k$ ' key
+DIM STRING title$
 cho:
 CLS
 n$=dir$(music$+"*",DIR)
@@ -67,19 +68,18 @@ FUNCTION chosen$()
 LOCAL INTEGER i=0
 LOCAL STRING n$=dir$(music$+"*",DIR)
 DO
-IF i=choice THEN EXIT DO
-i=i+1
-n$=dir$()
+  IF i=choice THEN EXIT DO
+  i=i+1
+  n$=dir$()
 LOOP
 chosen$=n$
 END FUNCTION
 
 SUB play_f name$
-LOCAL STRING k$ ' key
 LOCAL folder$=music$+name$+"/"
+LOCAL STRING k$ ' key
 CLS
 UI_ART folder$
-TEXT 160,13,"Folder:"+folder$,"CB"
 UI_HELP
 UI_VOL
 PLAY MP3 folder$
@@ -91,33 +91,33 @@ DO
 k$ = INKEY$
 IF k$ <> "" THEN
   SELECT CASE ASC(k$)
-    CASE 128  ' up
-      vol = MIN(vol + 5, 100)
-      PLAY VOLUME vol,vol
-      UI_VOL
-    CASE 129  ' down
-      vol = MAX(vol - 5, 0)
-      PLAY VOLUME vol,vol
-      UI_VOL
-    CASE 130  ' left 
-      PLAY PREVIOUS
+  CASE 128  ' up
+    vol = MIN(vol + 5, 100)
+    PLAY VOLUME vol,vol
+    UI_VOL
+  CASE 129  ' down
+    vol = MAX(vol - 5, 0)
+    PLAY VOLUME vol,vol
+    UI_VOL
+  CASE 130  ' left 
+    PLAY PREVIOUS
+    paused = 0
+  CASE 131  ' right
+    PLAY NEXT
+    paused = 0
+  CASE 13   ' Enter
+    IF paused = 0 THEN
+      PLAY PAUSE
+      paused = 1
+      PRINT "Paused"
+    ELSE
+      PLAY RESUME
       paused = 0
-    CASE 131  ' right
-      PLAY NEXT
-      paused = 0
-    CASE 13   ' Enter
-      IF paused = 0 THEN
-        PLAY PAUSE
-        paused = 1
-        PRINT "Paused"
-      ELSE
-        PLAY RESUME
-        paused = 0
-        PRINT "Playing"
-      ENDIF
-    CASE 27   ' Esc
-      PLAY STOP
-      EXIT DO
+      PRINT "Playing"
+    ENDIF
+  CASE 27   ' Esc
+    PLAY STOP
+    EXIT DO
   END SELECT
 ENDIF
 IF MM.INFO(TRACK)<>title$ THEN
@@ -130,31 +130,38 @@ CLS
 END SUB
 
 SUB UI_VOL
-  BOX 60,20,200,20,1,1,1 ' clear
-  BOX 60,20,200,20
-  BOX 60,20,2*vol,20,1,,rgb(green)
+  LOCAL INTEGER x=300,y=20,w=20,h=200
+  BOX x,y,w,h,1,1,1 ' clear
+  BOX x,y,w,h
+  BOX x,y+h-2*vol,w,(h/100)*vol,1,,rgb(green)
+  BOX x-8,y-12,24,12,1,1,1
+  TEXT 320,20,str$(vol),"RB"
 END SUB
 
 SUB UI_ART n$
 LOCAL STRING im$=n$+"album.bmp"
+LOCAL INTEGER posx=70,posy=50
+TEXT 160,13,"Folder:"+n$,"CB"
 IF MM.INFO(EXISTS FILE im$)=1 THEN
-LOAD IMAGE im$, 70,50
+  LOAD IMAGE im$, posx,posy
 ELSE
-BOX 70,50 , 180,180,,,rgb(grey)
-TEXT 110,110,"?","CM",,2,,rgb(grey)
+  BOX posx,posy , 180,180,,,rgb(grey)
+  TEXT 110,110,"?","CM",,2,,rgb(grey)
 ENDIF
 END SUB
 
 SUB UI_TITLE
-  BOX 0,150,320,20,1,1,1 ' clear
-  TEXT 300,160,title$,"RM"
+  BOX 0,250,320,20,1,1,1 ' clear
+  TEXT 300,260,title$,"RM"
 END SUB
 
 SUB UI_HELP
 line 0,300,319,300,1,rgb(magenta)
 local helps$="enter "+chr$(161)+"/"
 helps$=helps$+chr$(160)+" | "
-helps$=helps$+chr$(130)+" next | "
-helps$=helps$+chr$(131)+" prev"
+helps$=helps$+chr$(149)+" "+chr$(148)
+helps$=helps$+" track | "
+helps$=helps$+chr$(146)+" "+chr$(147)
+helps$=helps$+" volume"
 text 6,316,helps$,"LB",1,1
 END SUB
