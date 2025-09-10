@@ -1,20 +1,14 @@
-' Write a 320x320 BMP file on PicoMite
+' To Test if PicoMite's SAVE IMAGE really saves off colors 
+' write a 320x320 BMP file SLOW
 OPTION BASE 0
 
 SUB WriteBMPHeader fnr,width,height
   CONST size = width * height * 3
-  ' BMP signature
-  PRINT #1, "BM" ;
-
-  ' File size (DWORD)
-  PUTDWORD fnr, 54 + size
-
-  ' Reserved (2x WORD)
+  PRINT #1, "BM" ;      ' Bitmap
+  PUTDWORD fnr, 54 + size ' File size (DWORD)
+  PUTWORD fnr, 0 ' Reserved (2x WORD)
   PUTWORD fnr, 0
-  PUTWORD fnr, 0
-
-  ' Pixel data offset (54 bytes)
-  PUTDWORD fnr, 54
+  PUTDWORD fnr, 54 ' Pixel data offset (54 bytes)
 
   ' BITMAPINFOHEADER (40 bytes)
   PUTDWORD fnr, 40     ' header size
