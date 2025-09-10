@@ -20,18 +20,29 @@ OPTION EXPLICIT
 DIM INTEGER vol = 50  
 DIM INTEGER paused
 DIM INTEGER choice = 0
-DIM STRING title$
+'DIM STRING title$
 
 DIM music$ = "B:/music/"
-'DIM folder$ = "B:/music/runes/"
+DIM f1$ = "B:/music/runes/01.mp3"
 
 CHOOSE_F
+
+'print subs$(f1$)
+
+FUNCTION subs$(s$)
+LOCAL INTEGER i=0
+i=INSTR(4,s$,"/")
+'subs$=MID$(s$,i+1,INSTR(i,s$,"/")-i)
+s$=MID$(s$,i+1,32)
+i=INSTR(s$,"/")
+subs$=MID$(s$,i+1,32)
+END FUNCTION
 
 SUB CHOOSE_F
 LOCAL STRING n$
 LOCAL INTEGER y
 LOCAL STRING k$ ' key
-DIM STRING title$
+LOCAL STRING title$
 cho:
 CLS
 n$=dir$(music$+"*",DIR)
@@ -85,8 +96,8 @@ UI_VOL
 PLAY MP3 folder$
 PLAY VOLUME vol,vol
 paused = 0
-title$=MM.INFO(TRACK)
-UI_TITLE
+LOCAL title$=MM.INFO(TRACK)
+UI_TITLE title$
 DO
 k$ = INKEY$
 IF k$ <> "" THEN
@@ -122,7 +133,7 @@ IF k$ <> "" THEN
 ENDIF
 IF MM.INFO(TRACK)<>title$ THEN
   title$=MM.INFO(TRACK)
-  UI_TITLE
+  UI_TITLE title$
 ENDIF
 PAUSE 100
 LOOP
@@ -150,9 +161,10 @@ ELSE
 ENDIF
 END SUB
 
-SUB UI_TITLE
-  BOX 0,250,320,20,1,1,1 ' clear
-  TEXT 300,260,title$,"RM"
+SUB UI_TITLE title$
+  'BOX 0,250,320,20,1,1,1 ' clear
+  LOCAL t$=subs$(title$)
+  TEXT 300,260,t$,"RM",,,,0
 END SUB
 
 SUB UI_HELP
