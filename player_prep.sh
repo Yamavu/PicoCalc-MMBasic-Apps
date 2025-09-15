@@ -26,3 +26,56 @@
 
 # check ffmpeg exists, copy otherwise
 # check imagemagick exists
+
+usage() {
+    echo "Usage: $0 <source_folder> <destination_folder>"
+    echo "  <source_folder>: The source directory containing an album image and mp3s."
+    echo "  <destination_folder>: The directory to save the processed BMP file and optimized mp3s."
+    exit 1
+}
+
+if [ -z "$1" ] || [ -z "$2" ]; then
+    usage
+fi
+
+SRC_DIR="$1"
+DEST_DIR="$2"
+
+if [ ! -d "$SRC_DIR" ]; then
+    echo "Error: Source directory '$SRC_DIR' does not exist."
+    exit 1
+fi
+
+if [ ! -d "$DEST_DIR" ]; then
+    mkdir -p "$DEST_DIR"
+    if [ $? -ne 0 ]; then
+        echo "Error: Failed to create destination directory '$DEST_DIR'."
+        exit 1
+    fi
+fi
+
+ALBUM_ART_IN=$(find "$SRC_DIR" -maxdepth 1 -type f \
+  -iname "*.jpg" -o \
+  -iname "*.jpeg" -o \
+  -iname "*.png" -o \
+  -iname "*.webp" | sort | head -n 1)
+
+if [ -z "$ALBUM_ART_IN" ]; then
+    echo "No jpg, png, or webp images found in '$SRC_DIR'."
+    exit 0
+fi
+
+FILENAME=$(basename -- "$ALBUM_ART_IN")
+FILENAME_NO_EXT="${FILENAME%.*}"
+
+ALBUM_ART_DEST="$DEST_DIR/$FILENAME_NO_EXT.bmp"
+
+convert "$ALBUM_ART_IN" -resize '180x180^' -gravity center \
+  -crop '180x180+0+0' +repage -resize 180x180 "$ALBUM_ART_DEST"
+  
+if [ $? -eq 1 ]; then
+    echo "Error: ImageMagick conversion failed."
+    exit 1
+fi
+
+exit 0
