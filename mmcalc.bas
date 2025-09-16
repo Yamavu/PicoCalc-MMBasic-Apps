@@ -14,24 +14,52 @@
 ' You should have received a copy of the GNU General Public License
 ' along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-OPTION BASE 1
+MAIN "B:try.csv"
 
-DIM fg=MM.INFO(FCOLOR)
-DIM bg=MM.INFO(BCOLOR)
-DIM ft=MM.INFO(FONT)
+SUB LOAD_CSV fname$ 
+LOCAL fnr = 1
+LOCAL maxcols=16,maxrows=255
+OPEN fname$ FOR INPUT AS #fnr
+LOCAL dat(maxrows,maxcols)
+LOCAL cline$,cfld$
+LOCAL r=1,c=1
+DIM lins=0,cols=0
+DO WHILE NOT EOF(#fnr)
+  LINE INPUT #fnr,cline$
+  IF LEN(cline$)=0 THEN EXIT DO
+  c=1
+  DO WHILE c<maxcols
+    cfld$=FIELD$(cline$,c,",")
+    'print cfld$
+    IF cfld$="" THEN
+     EXIT DO
+    ENDIF
+    dat(r,c)=VAL(cfld$)
+    'print field$; VAL(cfld$)
+    INC c
+  LOOP
+  INC r
+LOOP
+cols=c-1
+lins=r-1
+DIM FLOAT table(lins,cols)
+FOR r = 1 TO lins
+  FOR c = 1 TO cols
+    table(r,c)=dat(r,c)
+  NEXT c
+NEXT r
+'MATH M_PRINT table()
+print lins,cols
+'END
 
-DIM FLOAT table(4,5)
-DIM active(2)
-ARRAY SET 1,active()
-DIM cols=BOUND(table(),1)
-DIM lins=BOUND(table(),2)
+''DIM FLOAT table(4,5)
+cols=BOUND(table(),1)
+lins=BOUND(table(),2)
 DIM wcol(cols)
 ARRAY SET 8,wcol()
 
-table(1,2)=1.1
-table(1,3)=2
-table(3,3)=3
-table(4,5)=5
+'table(1,2)=1.1:table(1,3)=2
+'table(3,3)=3:table(4,5)=5
 
 fw=MM.INFO(FONTWIDTH)
 fh=MM.INFO(FONTHEIGHT)
@@ -39,11 +67,17 @@ DIM cw(cols)
 DIM ch=(fh+2)
 DIM gui_ch=1
 MATH SCALE wcol(),fw,cw()
+END SUB
 
-MAIN
-'PRINT "arr:",cols,"cols, ",lins,"lines"
+SUB MAIN fname$
+OPTION BASE 1
 
-SUB MAIN
+DIM fg=MM.INFO(FCOLOR)
+DIM bg=MM.INFO(BCOLOR)
+DIM ft=MM.INFO(FONT)
+DIM active(2)
+ARRAY SET 1,active()
+LOAD_CSV fname$
 CLS
 DO
   IF gui_ch=1 THEN 
