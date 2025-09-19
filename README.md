@@ -11,3 +11,8 @@ Tested with Pico 2W and Webmite 6.00.03
 
 * `povray.bas` - crappy little raytracer for [POVRAY](https://www.povray.org/) files (WIP)
   * `testbmp.bas` - write a BMP to SD, could be seen as the high quality version of SAVE IMAGE
+
+## Ideas
+
+* Calendar
+* MCalc, like MMcalc but textbased

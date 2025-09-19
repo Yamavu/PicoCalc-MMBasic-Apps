@@ -12,11 +12,14 @@
 ' GNU General Public License for more details.
 ' 
 ' You should have received a copy of the GNU General Public License
-' along with this program.  If not, see <https://www.gnu.org/licenses/>.
+' along with this program.  If not, see ttps://www.gnu.org/licenses/>.
 
-MAIN "B:try.csv"
+MAIN "B:\try.csv"
 
-SUB LOAD_CSV fname$ 
+SUB LOAD_CSV fname$
+' read numeric csv from fname$
+' results in global variable table()
+' table size is set on input
 LOCAL fnr = 1
 LOCAL maxcols=16,maxrows=255
 OPEN fname$ FOR INPUT AS #fnr
@@ -40,8 +43,13 @@ DO WHILE NOT EOF(#fnr)
   LOOP
   INC r
 LOOP
+CLOSE #fnr
 cols=c-1
 lins=r-1
+IF lins<1 OR cols<1 THEN 
+  PRINT "no data found in "+fname$
+  END
+ENDIF
 DIM FLOAT table(lins,cols)
 FOR r = 1 TO lins
   FOR c = 1 TO cols
@@ -49,24 +57,22 @@ FOR r = 1 TO lins
   NEXT c
 NEXT r
 'MATH M_PRINT table()
-print lins,cols
-'END
+'print lins,cols
+END SUB
 
-''DIM FLOAT table(4,5)
-cols=BOUND(table(),1)
-lins=BOUND(table(),2)
-DIM wcol(cols)
-ARRAY SET 8,wcol()
-
-'table(1,2)=1.1:table(1,3)=2
-'table(3,3)=3:table(4,5)=5
-
-fw=MM.INFO(FONTWIDTH)
-fh=MM.INFO(FONTHEIGHT)
-DIM cw(cols)
-DIM ch=(fh+2)
-DIM gui_ch=1
-MATH SCALE wcol(),fw,cw()
+SUB SAVE_CSV fname$
+LOCAL fnr = 1
+LOCAL r=1,c=1
+print fname$,"writing"
+OPEN fname$ FOR OUTPUT AS #fnr
+FOR r = 1 TO lins
+  FOR c = 1 TO cols
+    PRINT #fnr,table(r,c),",",
+  NEXT c
+  PRINT #fnr, ""
+NEXT r
+CLOSE #fnr
+print fname$,"written"
 END SUB
 
 SUB MAIN fname$
@@ -75,17 +81,29 @@ OPTION BASE 1
 DIM fg=MM.INFO(FCOLOR)
 DIM bg=MM.INFO(BCOLOR)
 DIM ft=MM.INFO(FONT)
+DIM scene=1
 DIM active(2)
 ARRAY SET 1,active()
 LOAD_CSV fname$
+cols=BOUND(table(),1)
+lins=BOUND(table(),2)
+DIM wcol(cols)
+ARRAY SET 8,wcol()
+fw=MM.INFO(FONTWIDTH)
+fh=MM.INFO(FONTHEIGHT)
+DIM cw(cols)
+DIM ch=(fh+2)
+DIM gui_ch=1
+MATH SCALE wcol(),fw,cw()
 CLS
-DO
+DO WHILE scene=1
   IF gui_ch=1 THEN 
     DTABLE 10,10
     gui_ch=0
   ENDIF
   TCTRL
 LOOP
+'SAVE_CSV fname$
 END SUB
 
 SUB CCTRL
@@ -101,7 +119,7 @@ IF k$<>"" THEN
 SELECT CASE ASC(k$)
 CASE 27
   CLS
-  END
+  scene=0
 CASE 128 'up
   active(2)=MAX(active(2)-1,1)
 CASE 129 'down
@@ -156,7 +174,22 @@ INC cy,ch
 NEXT j
 INC cx,cw(i)
 NEXT i
+'END SUB
+
+cx=offx+llw
+LOCAL col(lins)
+for i=1 to cols
+'l$=CHR$(i-1+ASC("A"))
+MATH SLICE table(),i ,,col()
+l$=STR$(MATH(SUM col()))
+BOX cx,cy,cw(i)+1,ch,1,fg,bg
+TEXT cx+cw(i),cy+1,l$,"RT",ft,1,fg,bg
+INC cx,cw(i)
+NEXT i
+INC cy,ch
+
 LOCAL wtbl=MATH(SUM wcol())*fw
 BOX offx,cy,wtbl+llw,ch,1,fg,bg
 TEXT offx+1,cy+1,"> ","LT",ft,1,fg,bg
+
 END SUB
