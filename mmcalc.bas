@@ -33,19 +33,17 @@ DO WHILE NOT EOF(#fnr)
   c=1
   DO WHILE c<maxcols
     cfld$=FIELD$(cline$,c,",")
-    'print cfld$
     IF cfld$="" THEN
      EXIT DO
     ENDIF
     dat(r,c)=VAL(cfld$)
-    'print field$; VAL(cfld$)
     INC c
   LOOP
   INC r
 LOOP
 CLOSE #fnr
-cols=c-1
-lins=r-1
+cols=r-1
+lins=c-1
 IF lins<1 OR cols<1 THEN 
   PRINT "no data found in "+fname$
   END
@@ -53,11 +51,10 @@ ENDIF
 DIM FLOAT table(lins,cols)
 FOR r = 1 TO lins
   FOR c = 1 TO cols
-    table(r,c)=dat(r,c)
+    table(r,c)=dat(c,r) ' transposing for reasons?
   NEXT c
 NEXT r
 'MATH M_PRINT table()
-'print lins,cols
 END SUB
 
 SUB SAVE_CSV fname$
@@ -85,8 +82,8 @@ DIM scene=1
 DIM active(2)
 ARRAY SET 1,active()
 LOAD_CSV fname$
-cols=BOUND(table(),1)
 lins=BOUND(table(),2)
+cols=BOUND(table(),1)
 DIM wcol(cols)
 ARRAY SET 8,wcol()
 fw=MM.INFO(FONTWIDTH)
@@ -133,14 +130,14 @@ CASE 13  'enter
 END SELECT
 gui_ch=1
 ENDIF
-PAUSE 50
+PAUSE 20
 END SUB
 
 
 SUB DTABLE offx, offy
 LOCAL cx=offx
 LOCAL cy=offy+ch
-
+LOCAL s$
 LOCAL llw=fw*3
 for j=1 to lins
 l$=STR$(j)
