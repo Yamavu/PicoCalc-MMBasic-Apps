@@ -14,55 +14,65 @@
 ' You should have received a copy of the GNU General Public License
 ' along with this program.  If not, see ttps://www.gnu.org/licenses/>.
 
+
 MAIN "B:\try.csv"
+CLS
 
 SUB LOAD_CSV fname$
 ' read numeric csv from fname$
 ' results in global variable table()
 ' table size is set on input
+LOCAL res = 0
+ON ERROR SKIP
+ERASE table(),rows,cols
+ON ERROR ABORT
+
 LOCAL fnr = 1
 LOCAL maxcols=16,maxrows=255
 OPEN fname$ FOR INPUT AS #fnr
 LOCAL dat(maxrows,maxcols)
 LOCAL cline$,cfld$
 LOCAL r=1,c=1
-DIM lins=0,cols=0
 DO WHILE NOT EOF(#fnr)
   LINE INPUT #fnr,cline$
   IF LEN(cline$)=0 THEN EXIT DO
   c=1
   DO WHILE c<maxcols
     cfld$=FIELD$(cline$,c,",")
+    'print cfld$
     IF cfld$="" THEN
      EXIT DO
     ENDIF
     dat(r,c)=VAL(cfld$)
+    'print field$; VAL(cfld$)
     INC c
   LOOP
   INC r
 LOOP
 CLOSE #fnr
-cols=r-1
-lins=c-1
-IF lins<1 OR cols<1 THEN 
+DIM cols=c-1,rows=r-1
+IF rows<1 OR cols<1 THEN 
   PRINT "no data found in "+fname$
   END
 ENDIF
-DIM FLOAT table(lins,cols)
-FOR r = 1 TO lins
+DIM FLOAT table(rows,cols)
+FOR r = 1 TO rows
   FOR c = 1 TO cols
-    table(r,c)=dat(c,r) ' transposing for reasons?
+    table(r,c)=dat(r,c)
   NEXT c
 NEXT r
-'MATH M_PRINT table()
+MATH M_PRINT table()
+print rows,cols
+'print BOUND(table(),1),BOUND(table(),2)
+
 END SUB
 
 SUB SAVE_CSV fname$
-LOCAL fnr = 1
+LOCAL fnr=1
 LOCAL r=1,c=1
 print fname$,"writing"
 OPEN fname$ FOR OUTPUT AS #fnr
-FOR r = 1 TO lins
+FOR r = 1 TO rows
   FOR c = 1 TO cols
     PRINT #fnr,table(r,c),",",
   NEXT c
@@ -74,20 +84,13 @@ END SUB
 
 SUB MAIN fname$
 OPTION BASE 1
-
-DIM fg=MM.INFO(FCOLOR)
-DIM bg=MM.INFO(BCOLOR)
-DIM ft=MM.INFO(FONT)
 DIM scene=1
-DIM active(2)
-ARRAY SET 1,active()
+DIM curr(2)=(1,1)
 LOAD_CSV fname$
-lins=BOUND(table(),2)
-cols=BOUND(table(),1)
 DIM wcol(cols)
 ARRAY SET 8,wcol()
-fw=MM.INFO(FONTWIDTH)
-fh=MM.INFO(FONTHEIGHT)
+LOCAL fw=MM.INFO(FONTWIDTH)
+LOCAL fh=MM.INFO(FONTHEIGHT)
 DIM cw(cols)
 DIM ch=(fh+2)
 DIM gui_ch=1
@@ -95,98 +98,102 @@ MATH SCALE wcol(),fw,cw()
 CLS
 DO WHILE scene=1
   IF gui_ch=1 THEN 
-    DTABLE 10,10
+    DTABLE 
     gui_ch=0
   ENDIF
   TCTRL
+  PAUSE 50
 LOOP
-'SAVE_CSV fname$
 END SUB
 
-SUB CCTRL
-LOCAL x=active(1), y=active(2)
+SUB CCTRL 'cell control
 INPUT ,nr
-table(x,y)=nr
+' todo: lil window next to cell
+table(curr(1),curr(2))=nr
 gui_ch=1
 END SUB
 
-SUB TCTRL
+SUB TCTRL 'table control
 LOCAL k$=INKEY$
-IF k$<>"" THEN
+IF k$="" THEN 
+  PAUSE 50
+  EXIT SUB
+ENDIF
 SELECT CASE ASC(k$)
-CASE 27
-  CLS
+CASE 27  'ESC
   scene=0
+  EXIT SUB
 CASE 128 'up
-  active(2)=MAX(active(2)-1,1)
+  curr(1)=MAX(curr(1)-1,1)
 CASE 129 'down
-  active(2)=MIN(active(2)+1,lins)
+  curr(1)=MIN(curr(1)+1,rows)
 CASE 130 'left
-  active(1)=MAX(active(1)-1,1)
+  curr(2)=MAX(curr(2)-1,1)
 CASE 131 'right
-  active(1)=MIN(active(1)+1,cols)
+  curr(2)=MIN(curr(2)+1,cols)
+CASE ASC("S")
+  SAVE_CSV fname$
 CASE 13  'enter
   CCTRL
 END SELECT
 gui_ch=1
-ENDIF
-PAUSE 20
 END SUB
 
 
-SUB DTABLE offx, offy
-LOCAL cx=offx
-LOCAL cy=offy+ch
-LOCAL s$
+SUB DTABLE
+LOCAL fg=MM.INFO(FCOLOR)
+LOCAL bg=MM.INFO(BCOLOR)
+LOCAL fg2=RGB(128,0,128)
+LOCAL ft=MM.INFO(FONT)
+LOCAL offx=10, offy=10
+LOCAL fw=MM.INFO(FONTWIDTH)
+LOCAL fh=MM.INFO(FONTHEIGHT)
+LOCAL cx=offx,cy=offy
+LOCAL s$,l$
 LOCAL llw=fw*3
-for j=1 to lins
-l$=STR$(j)
-BOX cx,cy,llw+1,ch,1,fg,bg
-TEXT cx+llw/2,cy+1,l$,"CT",ft,1,fg,bg
-INC cy,ch
+
+INC cx,llw
+for j=1 to cols
+  l$=CHR$(j-1+ASC("A"))
+  BOX cx,cy,cw(j)+1,ch,1,fg,bg
+  TEXT cx+cw(j)/2,cy+1,l$,"CT",ft,1,fg,bg
+  INC cx,cw(j)
 NEXT j
-
-cx=offx+llw
-cy=offy
-for i=1 to cols
-l$=CHR$(i-1+ASC("A"))
-BOX cx,cy,cw(i)+1,ch,1,fg,bg
-TEXT cx+cw(i)/2,cy+1,l$,"CT",ft,1,fg,bg
-INC cx,cw(i)
-NEXT i
-
-cx=offx+llw
-for i=1 to cols
-cy=offy+ch
-for j=1 to lins
-s$=str$(table(i,j))
-IF active(1)=i AND active(2)=j THEN
-  BOX cx,cy,cw(i),ch,1,fg,fg
-  TEXT cx+cw(i),cy+1,s$,"RT",ft,1,bg,fg
-ELSE
-  BOX cx,cy,cw(i),ch,1,fg,bg
-  TEXT cx+cw(i)-1,cy+1,s$,"RT",ft,1,fg,bg
-ENDIF
 INC cy,ch
-NEXT j
-INC cx,cw(i)
+for i=1 to rows
+  cx=offx
+  '"cy=offy+ch
+  l$=STR$(i)
+  BOX cx,cy,llw+1,ch,1,fg,bg
+  TEXT cx+llw/2,cy+1,l$,"CT",ft,1,fg,bg
+  INC cx,llw
+  for j=1 to cols
+    s$=str$(table(i,j))
+    IF curr(1)=i AND curr(2)=j THEN
+      BOX cx,cy,cw(j),ch,1,fg,fg
+      TEXT cx+cw(j),cy+1,s$,"RT",ft,1,bg,fg
+    ELSE
+      BOX cx,cy,cw(j),ch,1,fg,bg
+      TEXT cx+cw(j)-1,cy+1,s$,"RT",ft,1,fg,bg
+    ENDIF
+    INC cx,cw(j)
+  NEXT j
+  INC cy,ch
 NEXT i
-'END SUB
 
 cx=offx+llw
-LOCAL col(lins)
-for i=1 to cols
-'l$=CHR$(i-1+ASC("A"))
-MATH SLICE table(),i ,,col()
-l$=STR$(MATH(SUM col()))
-BOX cx,cy,cw(i)+1,ch,1,fg,bg
-TEXT cx+cw(i),cy+1,l$,"RT",ft,1,fg,bg
-INC cx,cw(i)
-NEXT i
+LOCAL col(rows)
+for j=1 to cols
+  'l$=CHR$(i-1+ASC("A"))
+  MATH SLICE table(),,j,col()
+  l$=STR$(MATH(SUM col()))
+  BOX cx,cy,cw(j)+1,ch,1,fg,bg
+  TEXT cx+cw(j),cy+1,l$,"RT",ft,1,fg,bg
+  INC cx,cw(j)
+NEXT j
 INC cy,ch
 
 LOCAL wtbl=MATH(SUM wcol())*fw
 BOX offx,cy,wtbl+llw,ch,1,fg,bg
 TEXT offx+1,cy+1,"> ","LT",ft,1,fg,bg
-
 END SUB
